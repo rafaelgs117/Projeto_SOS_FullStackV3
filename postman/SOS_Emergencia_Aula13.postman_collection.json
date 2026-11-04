@@ -1,0 +1,373 @@
+{
+  "info": {
+    "_postman_id": "sos-emergencia-aula13",
+    "name": "SOS Emergência - Aula 13",
+    "description": "Coleção para demonstrar login JWT, consulta, cadastro, atualização e exclusão de contatos de emergência.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "contatoId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - API e saúde",
+      "item": [
+        {
+          "name": "GET - Página inicial da API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/"
+          },
+          "response": [
+            {
+              "name": "200 - API online",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"projeto\": \"SOS Emergência\",\n  \"mensagem\": \"API publicada e disponível.\",\n  \"versao\": \"13.0.0\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET - Health check PostgreSQL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health"
+          },
+          "response": [
+            {
+              "name": "200 - Banco conectado",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/health"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"api\": \"ok\",\n  \"banco\": \"conectado\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Autenticação",
+      "item": [
+        {
+          "name": "POST - Registrar usuário",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) { const data = pm.response.json(); if (data.usuario) pm.collectionVariables.set('emailTeste', data.usuario.email); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Luna Exemplo\",\n  \"telefone\": \"(48) 98888-1234\",\n  \"email\": \"luna.nova@sos.local\",\n  \"senha\": \"SenhaDeTeste123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/registro"
+          },
+          "response": [
+            {
+              "name": "201 - Usuário criado",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/registro"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"mensagem\": \"Usuário registrado com segurança.\",\n  \"usuario\": {\n    \"id_usuario\": 5,\n    \"nome_completo\": \"Luna Exemplo\",\n    \"telefone\": \"(48) 98888-1234\",\n    \"email\": \"luna.nova@sos.local\",\n    \"ativo\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Login e guardar JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) { const data = pm.response.json(); pm.collectionVariables.set('token', data.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"luna\",\n  \"senha\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/login"
+          },
+          "response": [
+            {
+              "name": "200 - Login realizado",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/login"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"mensagem\": \"Login realizado com sucesso.\",\n  \"token\": \"<JWT retornado pela API>\",\n  \"tipo\": \"Bearer\",\n  \"expiresIn\": \"1h\",\n  \"usuario\": {\"id_usuario\": 5, \"nome_completo\": \"Luna Exemplo\", \"email\": \"luna.nova@sos.local\"}\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Contatos (exigem Bearer Token)",
+      "item": [
+        {
+          "name": "GET - Listar contatos do usuário autenticado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contatos"
+          },
+          "response": [
+            {
+              "name": "200 - Lista de contatos (exemplo)",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/contatos"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "[\n  {\n    \"id_contato\": 1,\n    \"id_usuario\": 5,\n    \"nome\": \"Alpha Pendragon\",\n    \"telefone\": \"(48) 99555-5555\",\n    \"parentesco\": \"Mãe\",\n    \"ativo\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "GET - Consultar contato por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+          },
+          "response": [
+            {
+              "name": "200 - Contato encontrado (exemplo)",
+              "originalRequest": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id_contato\": 1,\n  \"id_usuario\": 5,\n  \"nome\": \"Alpha Pendragon\",\n  \"telefone\": \"(48) 99555-5555\",\n  \"parentesco\": \"Mãe\",\n  \"ativo\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Cadastrar contato",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contato de Teste\",\n  \"telefone\": \"(48) 99999-1111\",\n  \"parentesco\": \"Irmã\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/contatos"
+          },
+          "response": [
+            {
+              "name": "201 - Contato cadastrado (exemplo)",
+              "originalRequest": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/contatos"
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id_contato\": 10,\n  \"id_usuario\": 5,\n  \"nome\": \"Contato de Teste\",\n  \"telefone\": \"(48) 99999-1111\",\n  \"parentesco\": \"Irmã\",\n  \"ativo\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "PUT - Atualizar contato",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contato Atualizado\",\n  \"telefone\": \"(48) 99999-2222\",\n  \"parentesco\": \"Irmã\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+          },
+          "response": [
+            {
+              "name": "200 - Contato atualizado (exemplo)",
+              "originalRequest": {
+                "method": "PUT",
+                "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"id_contato\": 10,\n  \"id_usuario\": 5,\n  \"nome\": \"Contato Atualizado\",\n  \"telefone\": \"(48) 99999-2222\",\n  \"parentesco\": \"Irmã\",\n  \"ativo\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE - Excluir contato",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+          },
+          "response": [
+            {
+              "name": "200 - Contato excluído",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": "{{baseUrl}}/api/contatos/{{contatoId}}"
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"mensagem\": \"Contato removido do PostgreSQL.\",\n  \"id_contato\": 10\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Rotas protegidas",
+      "item": [
+        {
+          "name": "GET - Rota privada (sem token deve retornar 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/privado"
+          }
+        },
+        {
+          "name": "GET - Meu usuário",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/me"
+          }
+        }
+      ]
+    }
+  ]
+}

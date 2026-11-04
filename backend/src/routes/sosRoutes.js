@@ -1,0 +1,10 @@
+const express = require('express');
+const controller = require('../controllers/sosController');
+const authenticate = require('../middlewares/auth');
+const validate = require('../middlewares/validate');
+const { sosSchema } = require('../middlewares/schemas');
+const router = express.Router();
+router.use(authenticate);
+router.get('/', controller.list);
+router.post('/', validate(sosSchema), controller.create);
+module.exports = router;
